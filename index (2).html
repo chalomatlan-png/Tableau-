@@ -377,7 +377,7 @@ function triggerPhoto(childId){document.getElementById('photo-'+childId)?.click(
 function handlePhoto(childId,input){
   const file=input.files[0];if(!file)return;
   const r=new FileReader();
-  r.onload=e=>compress(e.target.result,120,async compressed=>{
+  r.onload=e=>compress(e.target.result,60,async compressed=>{
     const child=state.children.find(c=>c.id===childId);
     if(child){child.photo=compressed;await saveChild(child);render();}
   });
@@ -393,7 +393,7 @@ function compress(src,maxSize,cb){
     if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;}
     canvas.width=w;canvas.height=h;
     canvas.getContext('2d').drawImage(img,0,0,w,h);
-    cb(canvas.toDataURL('image/jpeg',0.75));
+    cb(canvas.toDataURL('image/jpeg',0.4));
   };
   img.src=src;
 }
