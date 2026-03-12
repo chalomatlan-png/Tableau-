@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>⭐ לוח המצוות ⭐</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDiMv9nwKAKSh_xj8IQwWW1sJKRUHhPeZA",
+    authDomain: "tableau-de-point.firebaseapp.com",
+    projectId: "tableau-de-point",
+    storageBucket: "tableau-de-point.firebasestorage.app",
+    messagingSenderId: "82805773107",
+    appId: "1:82805773107:web:b56e4129024cb571ace446"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db;
+  window.fsDoc = doc;
+  window.fsSetDoc = setDoc;
+  window.fsCollection = collection;
+  window.fsGetDocs = getDocs;
+  window.fsDeleteDoc = deleteDoc;
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Baloo 2', sans-serif; background: #fffdf9; min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: radial-gradient(circle,#FFD6E088 1px,transparent 1px), radial-gradient(circle,#C1E1FF88 1px,transparent 1px);
+  background-size: 80px 80px, 120px 120px;
+}
+
+.header { background: linear-gradient(135deg,#FFD6E0,#C1E1FF,#FFF3B0); padding: 20px 16px 16px; text-align: center; position: relative; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+.header h1 { font-size: 26px; font-weight: 800; color: #444; }
+
+.tabs-container { position: sticky; top: 0; z-index: 20; background: white; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+.tabs-scroll { display: flex; overflow-x: auto; padding: 10px 12px 0; gap: 8px; scrollbar-width: none; }
+.tabs-scroll::-webkit-scrollbar { display: none; }
+.tab { flex-shrink:0; padding:6px 14px 10px; border-radius:14px 14px 0 0; border:none; font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; cursor:pointer; background:#f0f0f0; color:#888; display:flex; align-items:center; gap:6px; position:relative; bottom:-2px; transition:all .2s; }
+.tab.active { color:#444; box-shadow:0 -3px 10px rgba(0,0,0,.06); bottom:0; }
+.tab-photo { width:26px; height:26px; border-radius:50%; object-fit:cover; border:2px solid white; }
+.tab-add { flex-shrink:0; width:36px; height:36px; border-radius:50%; border:2px dashed #ccc; background:transparent; font-size:20px; color:#aaa; cursor:pointer; align-self:center; margin-bottom:4px; }
+
+.main { position:relative; z-index:1; padding:16px 12px 100px; }
+
+.child-header { border-radius:18px; padding:16px; margin-bottom:14px; }
+.child-header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.child-name-area { display:flex; align-items:center; gap:10px; }
+
+.avatar-wrap { position:relative; cursor:pointer; flex-shrink:0; }
+.avatar-img { width:52px; height:52px; border-radius:50%; object-fit:cover; border:3px solid white; box-shadow:0 2px 10px rgba(0,0,0,.1); display:block; }
+.avatar-emoji { width:52px; height:52px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-size:28px; box-shadow:0 2px 10px rgba(0,0,0,.1); }
+.avatar-badge { position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; border-radius:50%; background:white; font-size:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+.child-name-btn { background:none; border:none; font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:800; color:#444; cursor:pointer; }
+
+.paracha-input { width:100%; border:none; background:rgba(255,255,255,.6); border-radius:10px; padding:8px 12px; font-family:'Baloo 2',sans-serif; font-size:14px; font-weight:600; color:#555; outline:none; margin-bottom:10px; }
+.paracha-input::placeholder { color:#aaa; }
+
+.progress-wrap { background:rgba(255,255,255,.5); border-radius:20px; height:28px; overflow:hidden; position:relative; }
+.progress-bar { height:100%; border-radius:20px; transition:width .5s,background .5s; min-width:28px; }
+.progress-text { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:13px; font-weight:800; color:white; text-shadow:0 1px 3px rgba(0,0,0,.2); }
+
+.action-row { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.btn { padding:8px 14px; border-radius:20px; border:none; font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:all .15s; }
+.btn:active { transform:scale(.95); }
+.btn-white { background:white; color:#666; }
+.btn-danger { background:#ffe0e0; color:#e05050; }
+.btn-success { background:#d0f5e0; color:#2a9d50; }
+
+.table-wrapper { overflow-x:auto; border-radius:18px; box-shadow:0 4px 20px rgba(0,0,0,.08); background:white; -webkit-overflow-scrolling:touch; }
+table { width:100%; min-width:560px; border-collapse:collapse; }
+thead tr { background:linear-gradient(90deg,#f8f8f8,#f0f0f0); }
+th { padding:10px 6px; font-size:11px; font-weight:800; color:#888; text-align:center; border-bottom:2px solid #f0f0f0; direction:rtl; }
+th:first-child { text-align:left; padding-left:12px; min-width:140px; width:140px; direction:ltr; }
+tbody tr { border-bottom:1px solid #f5f5f5; }
+tbody tr:last-child { border-bottom:none; }
+td { padding:6px; text-align:center; vertical-align:middle; }
+td:first-child { padding:8px 6px 8px 12px; text-align:left; }
+
+.mission-cell { display:flex; align-items:center; gap:8px; }
+.mission-icon { width:36px; height:36px; flex-shrink:0; border-radius:10px; background:#f8f8f8; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.mission-icon svg { width:30px; height:30px; }
+.mission-icon img { width:36px; height:36px; object-fit:cover; }
+.mission-name { font-size:12px; font-weight:700; color:#555; line-height:1.2; direction:rtl; }
+
+.check-cell { width:38px; height:38px; border-radius:12px; border:2.5px solid #e8e8e8; background:white; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all .2s cubic-bezier(.34,1.56,.64,1); font-size:18px; }
+.check-cell.checked { border-color:transparent; transform:scale(1.1); }
+.check-cell:active { transform:scale(.9); }
+
+.mission-input { border:none; background:#f8f8f8; border-radius:8px; padding:4px 8px; font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:600; color:#555; width:100%; outline:none; }
+.icon-btn { width:28px; height:28px; border-radius:8px; border:none; background:#f0f0f0; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.add-row-btn { width:100%; padding:12px; border:2px dashed #ddd; background:transparent; border-radius:0 0 18px 18px; font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; color:#aaa; cursor:pointer; }
+
+.gift-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; }
+.gift-overlay.show { opacity:1; pointer-events:all; }
+.gift-box { background:white; border-radius:28px; padding:36px 40px; text-align:center; transform:scale(.5); transition:transform .4s cubic-bezier(.34,1.56,.64,1); }
+.gift-overlay.show .gift-box { transform:scale(1); }
+.gift-emoji { font-size:72px; display:block; margin-bottom:12px; animation:bounce .6s infinite alternate; }
+.gift-title { font-size:24px; font-weight:800; color:#444; margin-bottom:6px; }
+.gift-sub { font-size:15px; color:#888; margin-bottom:20px; }
+@keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-10px)} }
+
+.confetti-piece { position:fixed; width:10px; height:10px; border-radius:2px; animation:fall 1.5s ease-in forwards; pointer-events:none; z-index:999; }
+@keyframes fall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+.star-pop { position:fixed; font-size:20px; pointer-events:none; animation:star .6s ease-out forwards; z-index:999; }
+@keyframes star { 0%{transform:scale(0) translateY(0);opacity:1} 50%{transform:scale(1.5) translateY(-20px);opacity:1} 100%{transform:scale(0) translateY(-40px);opacity:0} }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:500; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .3s; }
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal { background:white; width:100%; border-radius:24px 24px 0 0; padding:24px; transform:translateY(100%); transition:transform .3s cubic-bezier(.34,1.56,.64,1); max-height:80vh; overflow-y:auto; }
+.modal-overlay.show .modal { transform:translateY(0); }
+.modal h3 { font-size:18px; font-weight:800; color:#444; margin-bottom:16px; }
+.modal input[type=text] { width:100%; padding:12px 16px; border:2px solid #eee; border-radius:14px; font-family:'Baloo 2',sans-serif; font-size:16px; outline:none; margin-bottom:12px; }
+.modal-btns { display:flex; gap:10px; }
+.modal-btns .btn { flex:1; padding:12px; font-size:15px; }
+.color-swatches { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.swatch { width:36px; height:36px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform .2s; }
+.swatch.selected { border-color:#444; transform:scale(1.2); }
+.history-item { background:white; border-radius:14px; padding:12px 16px; margin-bottom:8px; box-shadow:0 2px 10px rgba(0,0,0,.05); display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+.history-week { font-size:13px; font-weight:700; color:#555; }
+.history-date { font-size:11px; color:#aaa; margin-top:2px; }
+.history-pct { font-size:18px; font-weight:800; }
+
+#loading { position:fixed; inset:0; background:linear-gradient(135deg,#FFD6E0,#C1E1FF,#FFF3B0); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .5s; }
+#loading.hidden { opacity:0; pointer-events:none; }
+.load-emoji { font-size:64px; animation:spin 2s linear infinite; }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="load-emoji">✡️</div><p style="font-size:18px;font-weight:700;color:#555">טוען...</p></div>
+
+<div class="gift-overlay" id="giftOverlay" onclick="closeGift()">
+  <div class="gift-box">
+    <span class="gift-emoji">🎁</span>
+    <div class="gift-title">כל הכבוד!</div>
+    <div class="gift-sub" id="giftSub">מגיע לך מתנה!</div>
+    <button class="btn btn-success" onclick="closeGift()" style="width:100%;padding:12px;font-size:15px;">🌟 סופר!</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalAddChild">
+  <div class="modal">
+    <h3>➕ הוסף ילד</h3>
+    <input type="text" id="newChildName" placeholder="שם הילד..."/>
+    <p style="font-size:13px;font-weight:700;color:#888;margin-bottom:10px;">צבע:</p>
+    <div class="color-swatches" id="colorSwatches"></div>
+    <div class="modal-btns">
+      <button class="btn btn-white" onclick="closeModal('modalAddChild')">ביטול</button>
+      <button class="btn btn-success" onclick="confirmAddChild()">הוסף ✨</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalRename">
+  <div class="modal">
+    <h3>✏️ שנה שם</h3>
+    <input type="text" id="renameInput" placeholder="שם חדש..."/>
+    <div class="modal-btns">
+      <button class="btn btn-white" onclick="closeModal('modalRename')">ביטול</button>
+      <button class="btn btn-success" onclick="confirmRename()">אישור ✅</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalHistory">
+  <div class="modal">
+    <h3>📚 היסטוריה</h3>
+    <div id="historyContent"></div>
+    <button class="btn btn-white" onclick="closeModal('modalHistory')" style="width:100%;margin-top:12px;padding:12px;">סגור</button>
+  </div>
+</div>
+
+<div class="header"><h1>✡️ לוח המצוות ⭐</h1></div>
+<div class="tabs-container"><div class="tabs-scroll" id="tabsScroll"><button class="tab-add" onclick="openAddChild()">+</button></div></div>
+<div class="main" id="mainContent"></div>
+
+<script>
+const COLORS=[{bg:'#FFD6E0',dark:'#ff9bb5'},{bg:'#FFF3B0',dark:'#f5c842'},{bg:'#C1E1FF',dark:'#6aaee8'},{bg:'#C8F5D0',dark:'#5ecb7a'},{bg:'#E8D5FF',dark:'#b07de8'},{bg:'#FFE4C8',dark:'#f5a742'}];
+const EMOJIS=['🌟','🦁','🐰','🦋','🌈','🐬','🦊','🌸'];
+const DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const DEFAULT_MISSIONS=[
+  {id:'m1',name:'נטילת ידיים',icon:'negel'},
+  {id:'m2',name:'להתלבש לבד',icon:'habiller'},
+  {id:'m3',name:'אהבת ישראל',icon:'ahavat'},
+  {id:'m4',name:'כיבוד אב ואם',icon:'kiboud'},
+  {id:'m5',name:'שיעורי בית',icon:'devoirs'},
+  {id:'m6',name:'בית כנסת / שבת',icon:'choule'},
+  {id:'m7',name:'תפילה',icon:'tefila'},
+  {id:'m8',name:'צדקה',icon:'tsedaka'},
+  {id:'m9',name:'ברכות לפני ואחרי',icon:'brachot'},
+  {id:'m10',name:'מודה אני',icon:'modeani'},
+];
+const ICONS={
+  negel:`<svg viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="26" rx="10" ry="7" fill="#B3E5FC"/><path d="M14 22 Q20 14 26 22" stroke="#29B6F6" stroke-width="2" fill="none"/><rect x="17" y="8" width="6" height="10" rx="3" fill="#81D4FA"/><circle cx="14" cy="30" r="3" fill="#F8BBD0"/><circle cx="26" cy="30" r="3" fill="#F8BBD0"/></svg>`,
+  habiller:`<svg viewBox="0 0 40 40" fill="none"><path d="M14 10 L10 16 L14 18 L14 32 L26 32 L26 18 L30 16 L26 10 Q23 14 20 14 Q17 14 14 10Z" fill="#FFB3C1"/><circle cx="20" cy="20" r="1.5" fill="white" opacity="0.7"/><circle cx="20" cy="24" r="1.5" fill="white" opacity="0.7"/></svg>`,
+  ahavat:`<svg viewBox="0 0 40 40" fill="none"><path d="M20 32 C20 32 8 24 8 16 C8 11 12 8 16 10 C18 11 20 13 20 13 C20 13 22 11 24 10 C28 8 32 11 32 16 C32 24 20 32 20 32Z" fill="#FF8FA3"/><path d="M20 12 L21.8 17H27L22.6 20L24.4 25L20 22L15.6 25L17.4 20L13 17H18.2Z" fill="#FFD700" opacity="0.9"/></svg>`,
+  kiboud:`<svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="12" r="4" fill="#FFCC80"/><path d="M14 28 Q14 20 20 20 Q26 20 26 28Z" fill="#AED6F1"/><circle cx="10" cy="14" r="3" fill="#FFCC80"/><circle cx="30" cy="14" r="3" fill="#FFCC80"/><path d="M6 28 Q6 22 10 22 Q14 22 14 26" fill="#F9A825" opacity="0.7"/><path d="M26 26 Q26 22 30 22 Q34 22 34 28Z" fill="#F9A825" opacity="0.7"/></svg>`,
+  devoirs:`<svg viewBox="0 0 40 40" fill="none"><rect x="10" y="8" width="18" height="24" rx="3" fill="#FFFDE7" stroke="#F9A825" stroke-width="1.5"/><line x1="14" y1="15" x2="24" y2="15" stroke="#F9A825" stroke-width="1.5"/><line x1="14" y1="19" x2="24" y2="19" stroke="#F9A825" stroke-width="1.5"/><line x1="14" y1="23" x2="20" y2="23" stroke="#F9A825" stroke-width="1.5"/></svg>`,
+  choule:`<svg viewBox="0 0 40 40" fill="none"><rect x="12" y="18" width="16" height="14" rx="2" fill="#B3D9FF"/><polygon points="20,8 8,18 32,18" fill="#81C4FF"/><rect x="17" y="24" width="6" height="8" rx="1" fill="#FFD180"/><rect x="14" y="20" width="4" height="5" rx="1" fill="#E3F2FD"/><rect x="22" y="20" width="4" height="5" rx="1" fill="#E3F2FD"/></svg>`,
+  tefila:`<svg viewBox="0 0 40 40" fill="none"><rect x="10" y="10" width="20" height="22" rx="3" fill="#E8F5E9" stroke="#66BB6A" stroke-width="1.5"/><path d="M20 15 L21.5 19.5H26L22.3 22L23.8 26.5L20 24L16.2 26.5L17.7 22L14 19.5H18.5Z" fill="#66BB6A"/><rect x="8" y="12" width="3" height="18" rx="1.5" fill="#A5D6A7"/><rect x="29" y="12" width="3" height="18" rx="1.5" fill="#A5D6A7"/></svg>`,
+  tsedaka:`<svg viewBox="0 0 40 40" fill="none"><rect x="12" y="16" width="16" height="18" rx="4" fill="#FFF9C4" stroke="#F9A825" stroke-width="1.5"/><rect x="15" y="12" width="10" height="6" rx="3" fill="#FFD54F" stroke="#F9A825" stroke-width="1"/><circle cx="20" cy="25" r="3" fill="#F9A825"/><path d="M19 24 L19 26 M18 25 L22 25" stroke="white" stroke-width="1.5"/></svg>`,
+  brachot:`<svg viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="28" rx="12" ry="5" fill="#FFF9C4" stroke="#F9A825" stroke-width="1.5"/><path d="M12 22 Q12 14 20 14 Q28 14 28 22" fill="#FFF3E0" stroke="#F9A825" stroke-width="1.5"/><line x1="20" y1="10" x2="20" y2="14" stroke="#F9A825" stroke-width="1.5"/></svg>`,
+  modeani:`<svg viewBox="0 0 40 40" fill="none"><circle cx="18" cy="12" r="5" fill="#FFCC80"/><path d="M12 30 Q12 20 18 20 Q24 20 24 30Z" fill="#B3D9FF"/><rect x="24" y="16" width="3" height="14" rx="1" fill="#9E9E9E"/><rect x="24" y="14" width="8" height="5" rx="1" fill="#2196F3"/><rect x="24" y="14" width="8" height="1.5" fill="white"/></svg>`,
+};
+
+let state={children:[],activeChildId:null,editMode:false,selectedColor:0,lastGiftPct:{}};
+let db,fsDoc,fsSetDoc,fsCollection,fsGetDocs,fsDeleteDoc;
+
+window.addEventListener('firebase-ready',async()=>{
+  db=window.db;fsDoc=window.fsDoc;fsSetDoc=window.fsSetDoc;
+  fsCollection=window.fsCollection;fsGetDocs=window.fsGetDocs;fsDeleteDoc=window.fsDeleteDoc;
+  await loadData();hideLoading();
+});
+
+async function loadData(){
+  try{
+    const snap=await fsGetDocs(fsCollection(db,'children'));
+    state.children=[];
+    snap.forEach(d=>state.children.push(d.data()));
+    state.children.sort((a,b)=>(a.order||0)-(b.order||0));
+    if(!state.children.length){const c=makeChild('ילד 1',0);state.children.push(c);await saveChild(c);}
+    state.activeChildId=state.children[0].id;
+    render();
+  }catch(e){
+    console.error(e);
+    const s=localStorage.getItem('mitsvot');
+    if(s)state.children=JSON.parse(s);
+    if(!state.children.length)state.children=[makeChild('ילד 1',0)];
+    state.activeChildId=state.children[0].id;
+    render();hideLoading();
+  }
+}
+
+function makeChild(name,colorIdx){
+  return{id:'c_'+Date.now()+'_'+Math.random().toString(36).substr(2,5),name,colorIdx:colorIdx%COLORS.length,emoji:EMOJIS[colorIdx%EMOJIS.length],photo:null,paracha:'',missions:JSON.parse(JSON.stringify(DEFAULT_MISSIONS)),checks:{},history:[],order:colorIdx};
+}
+
+async function saveChild(child){
+  try{await fsSetDoc(fsDoc(db,'children',child.id),child);}
+  catch(e){localStorage.setItem('mitsvot',JSON.stringify(state.children));}
+}
+
+function render(){renderTabs();renderMain();}
+
+function renderTabs(){
+  const scroll=document.getElementById('tabsScroll');
+  const add=scroll.querySelector('.tab-add');
+  [...scroll.querySelectorAll('.tab')].forEach(t=>t.remove());
+  state.children.forEach(child=>{
+    const tab=document.createElement('button');
+    tab.className='tab'+(child.id===state.activeChildId?' active':'');
+    tab.style.background=child.id===state.activeChildId?COLORS[child.colorIdx].bg:'#f0f0f0';
+    const av=child.photo?`<img class="tab-photo" src="${child.photo}"/>`:`<span>${child.emoji}</span>`;
+    tab.innerHTML=`${av} ${child.name}`;
+    tab.onclick=()=>{state.activeChildId=child.id;state.editMode=false;render();};
+    scroll.insertBefore(tab,add);
+  });
+}
+
+function renderMain(){
+  const main=document.getElementById('mainContent');
+  if(!state.activeChildId){main.innerHTML='<p style="text-align:center;color:#aaa;padding:40px">הוסף ילד ➕</p>';return;}
+  const child=state.children.find(c=>c.id===state.activeChildId);
+  if(!child)return;
+  const color=COLORS[child.colorIdx];
+  const pct=calcPct(child);
+  const av=child.photo
+    ?`<img class="avatar-img" src="${child.photo}" style="border-color:${color.dark}"/>`
+    :`<div class="avatar-emoji">${child.emoji}</div>`;
+
+  main.innerHTML=`
+    <div class="child-header" style="background:linear-gradient(135deg,${color.bg},${color.bg}99)">
+      <div class="child-header-top">
+        <div class="child-name-area">
+          <div class="avatar-wrap" onclick="triggerPhoto('${child.id}')">
+            ${av}<div class="avatar-badge">📷</div>
+          </div>
+          <input type="file" id="photo-${child.id}" accept="image/*" style="display:none" onchange="handlePhoto('${child.id}',this)"/>
+          <button class="child-name-btn" onclick="openRename('${child.id}')">${child.name} ✏️</button>
+        </div>
+        <button class="btn btn-danger" onclick="deleteChild('${child.id}')">🗑️</button>
+      </div>
+      <input class="paracha-input" placeholder="📖 שם הפרשה..." value="${child.paracha||''}" oninput="updateParacha('${child.id}',this.value)"/>
+      <div class="progress-wrap">
+        <div class="progress-bar" style="width:${pct}%;background:${pctColor(pct)}">
+          <span class="progress-text">${pct}%</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-white" onclick="toggleEdit()">${state.editMode?'✅ סיום':'✏️ עריכה'}</button>
+      <button class="btn btn-white" onclick="openHistory('${child.id}')">📚 היסטוריה</button>
+      <button class="btn btn-success" onclick="newWeek('${child.id}')">🗓️ שבוע חדש</button>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>משימה</th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      ${state.editMode?`<button class="add-row-btn" onclick="addMission('${child.id}')">+ הוסף משימה</button>`:''}
+    </div>`;
+  renderMissions(child);
+}
+
+function renderMissions(child){
+  const tbody=document.getElementById('tbody');
+  if(!tbody)return;
+  tbody.innerHTML='';
+  child.missions.forEach(m=>{
+    const tr=document.createElement('tr');
+    const icon=getMissionIcon(m);
+    let mCell=state.editMode
+      ?`<div class="mission-cell"><div class="mission-icon" onclick="triggerIconUpload('${child.id}','${m.id}')" style="cursor:pointer">${icon}</div><input class="mission-input" value="${m.name}" oninput="updateMissionName('${child.id}','${m.id}',this.value)"/><button class="icon-btn" onclick="deleteMission('${child.id}','${m.id}')">🗑️</button></div><input type="file" id="iu-${m.id}" accept="image/*" style="display:none" onchange="handleIconUpload('${child.id}','${m.id}',this)"/>`
+      :`<div class="mission-cell"><div class="mission-icon">${icon}</div><span class="mission-name">${m.name}</span></div>`;
+    const days=DAYS.map((d,di)=>{
+      const key=`${m.id}_${di}`;const checked=child.checks[key];const col=COLORS[child.colorIdx];
+      return`<td><div class="check-cell${checked?' checked':''}" style="${checked?`background:${col.dark};border-color:${col.dark}`:''}" onclick="toggleCheck('${child.id}','${m.id}',${di},this)">${checked?'✓':''}</div></td>`;
+    }).join('');
+    tr.innerHTML=`<td>${mCell}</td>${days}`;
+    tbody.appendChild(tr);
+  });
+}
+
+function getMissionIcon(m){
+  if(m.customIcon)return`<img src="${m.customIcon}" alt=""/>`;
+  return ICONS[m.icon]||`<span style="font-size:22px">⭐</span>`;
+}
+
+function toggleCheck(childId,missionId,dayIdx,el){
+  const child=state.children.find(c=>c.id===childId);if(!child)return;
+  const key=`${missionId}_${dayIdx}`;child.checks[key]=!child.checks[key];
+  const col=COLORS[child.colorIdx];
+  if(child.checks[key]){el.classList.add('checked');el.style.background=col.dark;el.style.borderColor=col.dark;el.textContent='✓';spawnStar(el);}
+  else{el.classList.remove('checked');el.style.background='';el.style.borderColor='';el.textContent='';}
+  const pct=calcPct(child);
+  const bar=document.querySelector('.progress-bar');const txt=document.querySelector('.progress-text');
+  if(bar){bar.style.width=pct+'%';bar.style.background=pctColor(pct);}if(txt)txt.textContent=pct+'%';
+  checkGift(childId,pct);saveChild(child);
+}
+
+function calcPct(child){
+  const total=child.missions.length*7;if(!total)return 0;
+  return Math.round(Object.values(child.checks).filter(Boolean).length/total*100);
+}
+function pctColor(p){return p<20?'#b0b0b0':p<40?'#FF6B6B':p<60?'#FFB347':p<80?'#FFD93D':'#6BCB77';}
+function checkGift(childId,pct){
+  const last=state.lastGiftPct[childId]||0;
+  for(const m of[20,40,60,80,100]){
+    if(pct>=m&&last<m){state.lastGiftPct[childId]=m;document.getElementById('giftSub').textContent=`הגעת ל-${m}% — מגיע לך מתנה! 🎉`;document.getElementById('giftOverlay').classList.add('show');spawnConfetti();break;}
+  }
+}
+function closeGift(){document.getElementById('giftOverlay').classList.remove('show');}
+function updateParacha(childId,val){const c=state.children.find(c=>c.id===childId);if(c){c.paracha=val;saveChild(c);}}
+function toggleEdit(){state.editMode=!state.editMode;renderMain();}
+function addMission(childId){const c=state.children.find(c=>c.id===childId);if(!c)return;c.missions.push({id:'m_'+Date.now(),name:'משימה חדשה',icon:'custom'});saveChild(c);renderMissions(c);}
+function deleteMission(childId,mId){const c=state.children.find(c=>c.id===childId);if(!c)return;c.missions=c.missions.filter(m=>m.id!==mId);Object.keys(c.checks).forEach(k=>{if(k.startsWith(mId))delete c.checks[k];});saveChild(c);renderMissions(c);}
+function updateMissionName(childId,mId,val){const c=state.children.find(c=>c.id===childId);const m=c?.missions.find(m=>m.id===mId);if(m){m.name=val;saveChild(c);}}
+function triggerIconUpload(childId,mId){document.getElementById('iu-'+mId)?.click();}
+function handleIconUpload(childId,mId,input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();r.onload=e=>compress(e.target.result,80,compressed=>{const c=state.children.find(c=>c.id===childId);const m=c?.missions.find(m=>m.id===mId);if(m){m.customIcon=compressed;saveChild(c);renderMissions(c);}});r.readAsDataURL(file);
+}
+
+// ✅ PHOTO avec compression
+function triggerPhoto(childId){document.getElementById('photo-'+childId)?.click();}
+function handlePhoto(childId,input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>compress(e.target.result,60,async compressed=>{
+    const child=state.children.find(c=>c.id===childId);
+    if(child){child.photo=compressed;await saveChild(child);render();}
+  });
+  r.readAsDataURL(file);
+}
+
+// ✅ Compression universelle
+function compress(src,maxSize,cb){
+  const img=new Image();
+  img.onload=()=>{
+    const canvas=document.createElement('canvas');
+    let w=img.width,h=img.height;
+    if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;}
+    canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    cb(canvas.toDataURL('image/jpeg',0.4));
+  };
+  img.src=src;
+}
+
+function openAddChild(){document.getElementById('newChildName').value='';state.selectedColor=state.children.length%COLORS.length;renderSwatches();openModal('modalAddChild');}
+function renderSwatches(){document.getElementById('colorSwatches').innerHTML=COLORS.map((c,i)=>`<div class="swatch${i===state.selectedColor?' selected':''}" style="background:${c.bg}" onclick="selectColor(${i})"></div>`).join('');}
+function selectColor(i){state.selectedColor=i;renderSwatches();}
+async function confirmAddChild(){
+  const name=document.getElementById('newChildName').value.trim();if(!name)return;
+  const child=makeChild(name,state.selectedColor);child.emoji=EMOJIS[state.children.length%EMOJIS.length];child.order=state.children.length;
+  state.children.push(child);await saveChild(child);state.activeChildId=child.id;closeModal('modalAddChild');render();
+}
+async function deleteChild(childId){
+  if(!confirm('למחוק?'))return;
+  state.children=state.children.filter(c=>c.id!==childId);
+  try{await fsDeleteDoc(fsDoc(db,'children',childId));}catch(e){}
+  state.activeChildId=state.children[0]?.id||null;render();
+}
+function openRename(childId){const c=state.children.find(c=>c.id===childId);document.getElementById('renameInput').value=c?.name||'';document.getElementById('modalRename').dataset.childId=childId;openModal('modalRename');}
+async function confirmRename(){
+  const childId=document.getElementById('modalRename').dataset.childId;
+  const c=state.children.find(c=>c.id===childId);const val=document.getElementById('renameInput').value.trim();
+  if(c&&val){c.name=val;await saveChild(c);closeModal('modalRename');render();}
+}
+async function newWeek(childId){
+  const c=state.children.find(c=>c.id===childId);if(!c)return;
+  if(!confirm('לארכב את השבוע הנוכחי?'))return;
+  if(!c.history)c.history=[];
+  c.history.unshift({paracha:c.paracha||'שבוע',date:new Date().toLocaleDateString('he-IL'),pct:calcPct(c),checks:{...c.checks},missions:JSON.parse(JSON.stringify(c.missions))});
+  c.checks={};c.paracha='';await saveChild(c);render();
+}
+function openHistory(childId){
+  const c=state.children.find(c=>c.id===childId);
+  if(!c?.history?.length){alert('אין היסטוריה עדיין.');return;}
+  document.getElementById('historyContent').innerHTML=c.history.map((h,i)=>`
+    <div class="history-item" onclick="viewHistoryWeek('${childId}',${i})">
+      <div><div class="history-week">📖 ${h.paracha}</div><div class="history-date">📅 ${h.date}</div></div>
+      <div class="history-pct" style="color:${pctColor(h.pct)}">${h.pct}%</div>
+    </div>`).join('');
+  openModal('modalHistory');
+}
+function viewHistoryWeek(childId,idx){
+  const c=state.children.find(c=>c.id===childId);const h=c.history[idx];const col=COLORS[c.colorIdx];
+  let html=`<button class="btn btn-white" onclick="openHistory('${childId}')" style="margin-bottom:12px">← חזרה</button>
+    <p style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px">${h.paracha} — ${h.date} — ${h.pct}%</p>
+    <div style="overflow-x:auto"><table style="min-width:400px;width:100%;border-collapse:collapse">
+    <thead><tr><th style="text-align:left;padding:6px;font-size:11px;color:#888">משימה</th>
+    ${DAYS.map(d=>`<th style="padding:6px;font-size:10px;color:#888">${d}</th>`).join('')}</tr></thead><tbody>`;
+  h.missions.forEach(m=>{
+    html+=`<tr><td style="padding:6px;font-size:12px;font-weight:700;color:#555;direction:rtl">${m.name}</td>
+    ${DAYS.map((d,di)=>{const ck=h.checks[`${m.id}_${di}`];return`<td style="text-align:center;padding:4px"><div class="check-cell${ck?' checked':''}" style="${ck?`background:${col.dark};border-color:${col.dark}`:''};pointer-events:none">${ck?'✓':''}</div></td>`;}).join('')}</tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('historyContent').innerHTML=html;
+}
+
+function spawnStar(el){
+  const rect=el.getBoundingClientRect();const s=document.createElement('div');s.className='star-pop';
+  s.textContent=['⭐','✨','🌟'][Math.floor(Math.random()*3)];
+  s.style.left=(rect.left+rect.width/2-10)+'px';s.style.top=(rect.top+rect.height/2)+'px';
+  document.body.appendChild(s);setTimeout(()=>s.remove(),700);
+}
+function spawnConfetti(){
+  const cols=['#FFD6E0','#FFF3B0','#C1E1FF','#C8F5D0','#E8D5FF','#FFB347'];
+  for(let i=0;i<30;i++)setTimeout(()=>{
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${cols[Math.floor(Math.random()*6)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1+Math.random()}s`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2500);
+  },i*50);
+}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function hideLoading(){const el=document.getElementById('loading');el.classList.add('hidden');setTimeout(()=>el.style.display='none',600);}
+['modalAddChild','modalRename','modalHistory'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
+});
+setTimeout(()=>{const l=document.getElementById('loading');if(l&&!l.classList.contains('hidden')){hideLoading();render();}},5000);
+</script>
+</body>
+</html>
